@@ -1,14 +1,14 @@
+import {
+  handleAudioStream,
+  handleScreenStream,
+  handleVideoStream,
+} from './handleStream';
 import './style.css';
-import { HuddleClient } from '@huddle01/web-core';
-
-const client = new HuddleClient({
-  projectId: 'TxG-OolMwGeCoZPzX660e65wwuU2MP83',
-});
+import { client } from './client';
 
 let token = '';
 let roomId = '';
 let displayName = '';
-let showInput = true;
 
 document.querySelector('#app').innerHTML = `
 <div class="flex flex-col items-center justify-center p-4">
@@ -68,12 +68,14 @@ document.querySelector('#app').innerHTML = `
             <video
               id="videoRef"
               autoPlay
+              class="aspect-video"
               muted
             />
           </div>
           <div class="w-1/2 mx-auto border-2 rounded-xl border-blue-400 object-contain">
             <video
               id="screenRef"
+              class="aspect-video"
               autoPlay
               muted
             />
@@ -112,121 +114,41 @@ document.querySelector('#joinRoom').addEventListener('click', async () => {
   });
 });
 
-document.querySelector('#video').addEventListener('click', async () => {
-  const videoRef = document.querySelector('#videoRef');
+handleVideoStream(document.querySelector('#video'));
 
-  if (videoRef.srcObject) {
-    videoRef.srcObject.getTracks().forEach((track) => track.stop());
-    videoRef.srcObject = null;
-    document.querySelector('#video').textContent = 'Enable Video';
-    return;
-  }
+handleScreenStream(document.querySelector('#screen'));
 
-  const streamResponse = await client.localPeer.deviceHandler.fetchStream({
-    mediaDeviceKind: 'cam',
-  });
-
-  const stream = streamResponse.stream;
-
-  client.localPeer.produceStream({
-    label: 'cam',
-    stream: stream,
-  });
-
-  console.log('stream', stream);
-
-  videoRef.srcObject = stream;
-  videoRef.onloadedmetadata = async () => {
-    console.warn('videoCard() | Metadata loaded...');
-    try {
-      await videoRef.play();
-      document.querySelector('#video').textContent = 'Disable Video';
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  videoRef.onerror = () => {
-    console.error('videoCard() | Error is hapenning...');
-  };
-});
-
-document.querySelector('#audio').addEventListener('click', async () => {
-  await client.localPeer.enableAudio();
-});
-
-document.querySelector('#screen').addEventListener('click', async () => {
-  const screenRef = document.querySelector('#screenRef');
-
-  if (screenRef.srcObject) {
-    screenRef.srcObject.getTracks().forEach((track) => track.stop());
-    screenRef.srcObject = null;
-    document.querySelector('#screen').textContent = 'Share Screen';
-    return;
-  }
-
-  const streamResponse = await client.localPeer.deviceHandler.fetchScreen();
-
-  const stream = streamResponse.stream;
-
-  client.localPeer.produceStream({
-    label: 'screen',
-    stream: stream,
-  });
-
-  console.log('stream', stream);
-
-  screenRef.srcObject = stream;
-  screenRef.onloadedmetadata = async () => {
-    console.warn('videoCard() | Metadata loaded...');
-    try {
-      await screenRef.play();
-      document.querySelector('#screen').textContent = 'Stop Sharing';
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  screenRef.onerror = () => {
-    console.error('videoCard() | Error is hapenning...');
-  };
-});
-
-client.room.on('new-peer-joined', (peer) => {
-  console.log('new-peer-joined', peer);
-  console.log('here it is');
-  const remotePeers = document.querySelector('#remotePeers');
-  const remotePeer = document.createElement('div');
-  remotePeer.id = peer.id;
-  remotePeer.innerHTML = `
-  <div class="flex flex-col gap-2">
-    <div class="w-1/2 mx-auto border-2 rounded-xl border-blue-400 object-contain">
-      <video
-        id="${peer.id}-video"
-        autoPlay
-        muted
-      />
-    </div>
-    <div class="w-1/2 mx-auto border-2 rounded-xl border-blue-400 object-contain">
-      <video
-        id="${peer.id}-screen"
-        autoPlay
-        muted
-      />
-    </div>
-  </div>
-  `;
-  console.log('remote', peer.peer.getConsumer());
-  document.querySelector(`#${peer.id}-video`).srcObject = peer.peer
-    .getConsumer('video')
-    .track();
-  remotePeers.appendChild(remotePeer);
-});
+handleAudioStream(document.querySelector('#audio'));
 
 client.room.on('stream-added', ({ peerId, label }) => {
-  console.log('new-peer-joined', peer);
   console.log(
     'remote',
-    client.room.getRemotePeerById(peerId).peer.getConsumer(label)?.track()
+    client.room.getRemotePeerById(peerId)?.getConsumer(label)?.track,
+    label
   );
+  const container = document.querySelector('#remotePeers');
+  let mediaRef = document.createElement('video');
+  if (label == 'audio') {
+    mediaRef = document.createElement('audio');
+  }
+  const remoteTrack = client.room
+    .getRemotePeerById(peerId)
+    ?.getConsumer(label)?.track;
+
+  mediaRef.srcObject = new MediaStream([remoteTrack]);
+  mediaRef.id = `${peerId}-${label}`;
+  mediaRef.autoplay = true;
+  if (label == 'video') {
+    mediaRef.muted = true;
+  }
+  mediaRef.className = 'border-2 rounded-xl border-white-400 aspect-video';
+  container.appendChild(mediaRef);
+});
+
+client.room.on('stream-closed', ({ peerId, label }) => {
+  console.log('stream-closed', peerId, label);
+  const mediaRef = document.querySelector(`#${peerId}-${label}`);
+  mediaRef.srcObject.getTracks().forEach((track) => track.stop());
+  mediaRef.srcObject = null;
+  mediaRef.remove();
 });
