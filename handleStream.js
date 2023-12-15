@@ -30,7 +30,7 @@ export function handleVideoStream(element) {
 
     const stream = streamResponse.stream;
 
-    client.localPeer.produceStream({
+    client.localPeer.produce({
       label: 'video',
       stream: stream,
     });
@@ -69,7 +69,7 @@ export function handleScreenStream(element) {
 
     const stream = streamResponse.stream;
 
-    client.localPeer.produceStream({
+    client.localPeer.produce({
       label: 'screen',
       stream: stream,
     });

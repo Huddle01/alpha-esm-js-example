@@ -112,6 +112,7 @@ document.querySelector('#joinRoom').addEventListener('click', async () => {
   document.querySelectorAll('input').forEach((input) => {
     input.hidden = true;
   });
+  document.querySelector('#joinRoom').hidden = true;
 });
 
 handleVideoStream(document.querySelector('#video'));
