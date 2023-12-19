@@ -2,15 +2,16 @@ import {
   handleAudioStream,
   handleScreenStream,
   handleVideoStream,
-} from './handleStream';
-import './style.css';
-import { client } from './client';
+} from "./handleStream";
+import "./style.css";
+import { client } from "./client";
+import { handleEvents } from "./handleEvents";
 
-let token = '';
-let roomId = '';
-let displayName = '';
+let token = "";
+let roomId = "";
+let displayName = "";
 
-document.querySelector('#app').innerHTML = `
+document.querySelector("#app").innerHTML = `
 <div class="flex flex-col items-center justify-center p-4">
 <div class="flex">
     <input
@@ -89,19 +90,19 @@ document.querySelector('#app').innerHTML = `
 
 `;
 
-document.querySelector('#roomId').addEventListener('change', (e) => {
+document.querySelector("#roomId").addEventListener("change", (e) => {
   roomId = e.target.value;
 });
 
-document.querySelector('#accessToken').addEventListener('change', (e) => {
+document.querySelector("#accessToken").addEventListener("change", (e) => {
   token = e.target.value;
 });
 
-document.querySelector('#displayName').addEventListener('change', (e) => {
+document.querySelector("#displayName").addEventListener("change", (e) => {
   displayName = e.target.value;
 });
 
-document.querySelector('#joinRoom').addEventListener('click', async () => {
+document.querySelector("#joinRoom").addEventListener("click", async () => {
   const room = await client.joinRoom({
     roomId,
     token,
@@ -109,47 +110,16 @@ document.querySelector('#joinRoom').addEventListener('click', async () => {
   room.updateMetadata({
     displayName: displayName,
   });
-  document.querySelectorAll('input').forEach((input) => {
+  document.querySelectorAll("input").forEach((input) => {
     input.hidden = true;
   });
-  document.querySelector('#joinRoom').hidden = true;
+  document.querySelector("#joinRoom").hidden = true;
 });
 
-handleVideoStream(document.querySelector('#video'));
+handleVideoStream(document.querySelector("#video"));
 
-handleScreenStream(document.querySelector('#screen'));
+handleScreenStream(document.querySelector("#screen"));
 
-handleAudioStream(document.querySelector('#audio'));
+handleAudioStream(document.querySelector("#audio"));
 
-client.room.on('stream-added', ({ peerId, label }) => {
-  console.log(
-    'remote',
-    client.room.getRemotePeerById(peerId)?.getConsumer(label)?.track,
-    label
-  );
-  const container = document.querySelector('#remotePeers');
-  let mediaRef = document.createElement('video');
-  if (label == 'audio') {
-    mediaRef = document.createElement('audio');
-  }
-  const remoteTrack = client.room
-    .getRemotePeerById(peerId)
-    ?.getConsumer(label)?.track;
-
-  mediaRef.srcObject = new MediaStream([remoteTrack]);
-  mediaRef.id = `${peerId}-${label}`;
-  mediaRef.autoplay = true;
-  if (label == 'video') {
-    mediaRef.muted = true;
-  }
-  mediaRef.className = 'border-2 rounded-xl border-white-400 aspect-video';
-  container.appendChild(mediaRef);
-});
-
-client.room.on('stream-closed', ({ peerId, label }) => {
-  console.log('stream-closed', peerId, label);
-  const mediaRef = document.querySelector(`#${peerId}-${label}`);
-  mediaRef.srcObject.getTracks().forEach((track) => track.stop());
-  mediaRef.srcObject = null;
-  mediaRef.remove();
-});
+handleEvents();
