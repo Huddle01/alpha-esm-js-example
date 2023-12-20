@@ -90,6 +90,8 @@ document.querySelector("#app").innerHTML = `
 
 `;
 
+handleEvents();
+
 document.querySelector("#roomId").addEventListener("change", (e) => {
   roomId = e.target.value;
 });
@@ -121,5 +123,3 @@ handleVideoStream(document.querySelector("#video"));
 handleScreenStream(document.querySelector("#screen"));
 
 handleAudioStream(document.querySelector("#audio"));
-
-handleEvents();

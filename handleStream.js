@@ -18,8 +18,7 @@ export function handleVideoStream(element) {
     const videoRef = document.querySelector("#videoRef");
 
     if (videoRef.srcObject) {
-      videoRef.srcObject.getTracks().forEach((track) => track.stop());
-      videoRef.srcObject = null;
+      client.localPeer.disableVideo();
       document.querySelector("#video").textContent = "Enable Video";
       return;
     }
