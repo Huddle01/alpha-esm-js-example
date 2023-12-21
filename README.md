@@ -5,11 +5,6 @@ Run following commands to run project
 bun install
 ```
 
-2. Build css for tailwind
-```
-bun tailwind
-```
-
 3. Run server
 ```
 bun dev
