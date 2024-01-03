@@ -23,16 +23,7 @@ export function handleVideoStream(element) {
       return;
     }
 
-    const streamResponse = await client.localPeer.deviceHandler.fetchStream({
-      mediaDeviceKind: "cam",
-    });
-
-    const stream = streamResponse.stream;
-
-    client.localPeer.produce({
-      label: "video",
-      stream: stream,
-    });
+    const stream = await client.localPeer.enableVideo();
 
     console.log("stream", stream);
 
@@ -64,14 +55,7 @@ export function handleScreenStream(element) {
       return;
     }
 
-    const streamResponse = await client.localPeer.deviceHandler.fetchScreen();
-
-    const stream = streamResponse.stream;
-
-    client.localPeer.produce({
-      label: "screen",
-      stream: stream,
-    });
+    const stream = await client.localPeer.startScreenShare();
 
     console.log("stream", stream);
 
