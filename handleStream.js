@@ -58,7 +58,7 @@ export function handleScreenStream(element) {
     const screenRef = document.querySelector("#screenRef");
 
     if (screenRef.srcObject) {
-      screenRef.srcObject.getTracks().forEach((track) => track.stop());
+      client.localPeer.disableScreen();
       screenRef.srcObject = null;
       document.querySelector("#screen").textContent = "Share Screen";
       return;
