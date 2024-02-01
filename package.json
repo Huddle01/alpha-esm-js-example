@@ -16,8 +16,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@huddle01/react": "beta",
-    "@huddle01/server-sdk": "beta",
-    "@huddle01/web-core": "alpha"
+    "@huddle01/web-core": "^2.0.0"
   }
 }
